@@ -48,5 +48,10 @@ public class TaskFiveTests {
         }
         output.append("---end output ---");
         logger.info(output.toString());
+        logger.info("kill this test once you find the answer");
+        while (true) {
+            Thread.sleep(20000);
+            logger.info("...");
+        }
     }
 }

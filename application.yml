@@ -1,5 +1,7 @@
 general:
   kafka-topic: transaction-topic
+server:
+  port: 33400
 spring:
   kafka:
     producer:

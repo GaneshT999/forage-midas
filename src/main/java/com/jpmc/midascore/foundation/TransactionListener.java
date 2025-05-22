@@ -7,11 +7,16 @@ import com.jpmc.midascore.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 
 @Component
 public class TransactionListener {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
 
     @Autowired
     private UserRepository userRepository;
@@ -25,6 +30,16 @@ public class TransactionListener {
             containerFactory = "transactionKafkaListenerContainerFactory"
     )
     public void listen(Transaction transaction) {
+
+        // Step 1: Post transaction to Incentive API
+        Incentive incentive = restTemplate.postForObject(
+                "http://localhost:8080/incentive",
+                transaction,
+                Incentive.class
+        );
+
+        float incentiveAmount = (incentive != null) ? incentive.getAmount() : 0;
+
         UserRecord sender = userRepository.findById(transaction.getSenderId());
         UserRecord recipient = userRepository.findById(transaction.getRecipientId());
 
@@ -38,9 +53,9 @@ public class TransactionListener {
             return;
         }
 
-        // Adjust balances
+        // Step 2: Adjust balances
         sender.setBalance(sender.getBalance() - transaction.getAmount());
-        recipient.setBalance(recipient.getBalance() + transaction.getAmount());
+        recipient.setBalance(recipient.getBalance() + transaction.getAmount() + incentiveAmount);
 
         // Save updated users
         userRepository.save(sender);
@@ -52,6 +67,7 @@ public class TransactionListener {
         record.setRecipient(recipient);
         record.setAmount(transaction.getAmount());
         record.setTimestamp(LocalDateTime.now());
+        record.setIncentive(incentiveAmount);
 
         transactionRecordRepository.save(record);
 

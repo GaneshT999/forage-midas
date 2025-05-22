@@ -1,5 +1,7 @@
 package com.jpmc.midascore;
 
+import com.jpmc.midascore.entity.UserRecord;
+import com.jpmc.midascore.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,9 @@ import org.springframework.test.annotation.DirtiesContext;
 @EmbeddedKafka(partitions = 1, brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"})
 public class TaskFourTests {
     static final Logger logger = LoggerFactory.getLogger(TaskFourTests.class);
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private KafkaProducer kafkaProducer;
@@ -31,7 +36,8 @@ public class TaskFourTests {
             kafkaProducer.send(transactionLine);
         }
         Thread.sleep(2000);
-
+        UserRecord waldorf = userRepository.findById(9);
+        System.out.println("Waldorf's final balance: " + waldorf.getBalance());
 
         logger.info("----------------------------------------------------------");
         logger.info("----------------------------------------------------------");

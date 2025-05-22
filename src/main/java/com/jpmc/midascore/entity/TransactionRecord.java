@@ -20,7 +20,17 @@ public class TransactionRecord {
 
     private LocalDateTime timestamp;
 
+    private float incentive;
+
     // Getters and setters
+
+    public float getIncentive() {
+        return incentive;
+    }
+
+    public void setIncentive(float incentive) {
+        this.incentive = incentive;
+    }
 
     public Long getId() {
         return id;
